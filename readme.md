@@ -138,10 +138,4 @@ This configuration is for development only. Production deployment requires:
 
 Submit issues and pull requests via the [issue tracker](https://github.com/Zain0205/gdgoc-subbmission-be-go/issues).
 
-## License
-
-[Specify License]
-
 ---
-
-**Stack:** Go · Docker · React · MySQL · Nginx

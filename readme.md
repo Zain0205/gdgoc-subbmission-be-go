@@ -1,14 +1,14 @@
-# GDG OC Submission – Go Backend
+# 🚀 GDG OC Submission – Go Backend
 
 A containerized Go backend service with Docker-based development environment featuring hot-reload capabilities.
 
-## Prerequisites
+## 📋 Prerequisites
 
 - [Docker](https://www.docker.com/get-started) (20.10+)
 - [Docker Compose](https://docs.docker.com/compose/install/) (v2.0+)
 - [Git](https://git-scm.com/)
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 parent-directory/
@@ -22,7 +22,7 @@ parent-directory/
     └── package.json
 ```
 
-## Quick Start
+## ⚡ Quick Start
 
 ### 1. Clone Repositories
 
@@ -67,16 +67,16 @@ ALLOWED_ORIGINS=http://localhost:8000,http://localhost:5173
 docker-compose up -d --build
 ```
 
-## Service Endpoints
+## 🌐 Service Endpoints
 
 | Service  | URL                         | Purpose                   |
 |----------|-----------------------------|---------------------------|
 | Nginx    | `http://localhost:8000`     | Reverse proxy entry point |
 | Backend  | `http://localhost:8080`     | Direct API access         |
 | Frontend | `http://localhost:5173`     | Development server        |
-| MySQL    | `localhost:3307`            | Database connection       |
+| MySQL    | `localhost:3306`            | Database connection       |
 
-## Architecture
+## 🏗️ Architecture
 
 | Service  | Container          | Technology   | Port |
 |----------|--------------------|--------------|------|
@@ -85,14 +85,14 @@ docker-compose up -d --build
 | Database | `stujam_db`        | MySQL 8.0    | 3306 |
 | Proxy    | `stujam_nginx`     | Nginx        | 80   |
 
-## Development
+## 💻 Development
 
 ### Hot Reload
 
 - **Backend:** Air (v1.62.0) automatically reloads on `.go` file changes
 - **Frontend:** Vite HMR for instant updates
 
-> **Note:** Air version is pinned to v1.62.0 in `Dockerfile.dev` due to compatibility issues with latest versions. Do not update without testing.
+> **⚠️ Note:** Air version is pinned to v1.62.0 in `Dockerfile.dev` due to compatibility issues with latest versions. Do not update without testing.
 
 ### Common Commands
 
@@ -111,7 +111,7 @@ docker-compose up -d --build
 docker-compose build --no-cache
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 **Port conflicts:** Modify port mappings in `docker-compose.yml`
 
@@ -125,7 +125,12 @@ sudo chown -R $USER:$USER .
 go mod tidy
 ```
 
-## Production Deployment
+**Air hot-reload not working:**
+- Ensure Air v1.62.0 is installed (check `Dockerfile.dev`)
+- Verify `.air.toml` configuration exists
+- Check container logs: `docker-compose logs -f backend`
+
+## 🚢 Production Deployment
 
 This configuration is for development only. Production deployment requires:
 
@@ -134,7 +139,7 @@ This configuration is for development only. Production deployment requires:
 3. Secure environment variable management
 4. Database connection pooling and optimization
 
-## Contributing
+## 🤝 Contributing
 
 Submit issues and pull requests via the [issue tracker](https://github.com/Zain0205/gdgoc-subbmission-be-go/issues).
 

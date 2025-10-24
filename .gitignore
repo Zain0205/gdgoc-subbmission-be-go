@@ -1,0 +1,39 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries, coverage reports, and profiling data
+*.test
+*.out
+*.prof
+
+# Compiled binary (use project name if compiled directly without -o)
+gdgoc-submission-be-go
+
+# Air (Live reload tool)
+.air.toml
+/tmp/
+.air.log
+
+# Dependency directories (Go modules usually handle this)
+vendor/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor settings (optional but recommended to ignore)
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+*.tmp

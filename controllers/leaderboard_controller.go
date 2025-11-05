@@ -9,24 +9,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetLeaderboard(c *gin.Context) {
-	eventID := c.Param("eventId")
+// GetLeaderboardByTrack
+func GetLeaderboardByTrack(c *gin.Context) {
+	trackID := c.Param("trackId")
 
 	var results []dto.LeaderboardResult
 
 	err := database.DB.Table("users").
-		Select("users.id as user_id, users.name, AVG(scores.value) as average_score").
+		Select("users.id as user_id, users.name, SUM(submissions.score) as total_score").
 		Joins("JOIN submissions ON users.id = submissions.user_id").
-		Joins("JOIN scores ON submissions.id = scores.submission_id").
-		Where("submissions.event_id = ?", eventID).
+		Joins("JOIN series ON submissions.series_id = series.id").
+		Where("series.track_id = ?", trackID).
 		Group("users.id, users.name").
-		Order("average_score DESC").
+		Order("total_score DESC").
 		Scan(&results).Error
-
 	if err != nil {
 		utils.APIResponse(c, http.StatusInternalServerError, "Failed to generate leaderboard", err.Error())
 		return
 	}
 
+	for i := range results {
+		results[i].Rank = i + 1
+	}
+
 	utils.APIResponse(c, http.StatusOK, "Leaderboard fetched successfully", results)
 }
+

@@ -19,25 +19,37 @@ func SetupRouter() *gin.Engine {
 			auth.POST("/login", controllers.Login)
 		}
 
-		// 2. Member Routes (Requires Member Role)
+		// 2. Public Routes
+		public := api.Group("/")
+		public.Use(middleware.AuthMiddleware())
+		{
+			public.GET("/tracks", controllers.GetAllTracks)
+			public.GET("/tracks/:id", controllers.GetTrackWithSeries)
+			public.GET("/leaderboard/track/:trackId", controllers.GetLeaderboardByTrack)
+		}
+
+		// 3. Member Routes
 		member := api.Group("/member")
 		member.Use(middleware.AuthMiddleware(), middleware.RoleMiddleware("member"))
 		{
-			member.POST("/event/join", controllers.JoinEvent)
-			member.POST("/submission", controllers.CreateSubmission)
+			member.POST("/submissions", controllers.CreateSubmission)
+			member.POST("/series/:id/verify", controllers.VerifySeriesCode)
 		}
 
-		// 3. Admin Routes (Requires Admin Role)
+		// 4. Admin Routes
 		admin := api.Group("/admin")
 		admin.Use(middleware.AuthMiddleware(), middleware.RoleMiddleware("admin"))
 		{
-			admin.POST("/event", controllers.CreateEvent)
-			admin.POST("/score", controllers.CreateScore)
-			admin.GET("/submissions/event/:eventId", controllers.GetSubmissionsByEvent)
-		}
+			admin.POST("/tracks", controllers.CreateTrack)
 
-		api.GET("/leaderboard/:eventId", middleware.AuthMiddleware(), controllers.GetLeaderboard)
+			admin.POST("/series", controllers.CreateSeries)
+			admin.PATCH("/series/:id/code", controllers.SetSeriesVerificationCode)
+
+			admin.GET("/submissions/series/:seriesId", controllers.GetSubmissionsBySeries)
+			admin.POST("/submissions/grade", controllers.GradeSubmission)
+		}
 	}
 
 	return r
 }
+

@@ -8,7 +8,7 @@ import (
 	"github.com/Zain0205/gdgoc-subbmission-be-go/models"
 	"github.com/Zain0205/gdgoc-subbmission-be-go/utils"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func Register(c *gin.Context) {
@@ -18,11 +18,24 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Create Admin
+	var userCount int64
+	database.DB.Model(&models.User{}).Count(&userCount)
+
+	userRole := "member"
+	if userCount == 0 {
+		userRole = "admin"
+	}
+
 	user := models.User{
-		Name:     input.Name,
-		Email:    input.Email,
-		Password: input.Password,
-		Role:     input.Role,
+		Name:  input.Name,
+		Email: input.Email,
+		Role:  userRole,
+	}
+
+	if err := user.SetPassword(input.Password); err != nil {
+		utils.APIResponse(c, http.StatusInternalServerError, "Failed to hash password", err.Error())
+		return
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
@@ -42,11 +55,15 @@ func Login(c *gin.Context) {
 
 	var user models.User
 	if err := database.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
-		utils.APIResponse(c, http.StatusUnauthorized, "Invalid email or password", nil)
+		if err == gorm.ErrRecordNotFound {
+			utils.APIResponse(c, http.StatusUnauthorized, "Invalid email or password", nil)
+			return
+		}
+		utils.APIResponse(c, http.StatusInternalServerError, "Database error", err.Error())
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
+	if err := user.CheckPassword(input.Password); err != nil {
 		utils.APIResponse(c, http.StatusUnauthorized, "Invalid email or password", nil)
 		return
 	}
@@ -59,3 +76,4 @@ func Login(c *gin.Context) {
 
 	utils.APIResponse(c, http.StatusOK, "Login successful", gin.H{"token": token})
 }
+

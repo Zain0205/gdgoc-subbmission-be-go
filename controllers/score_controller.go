@@ -10,14 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateScore(c *gin.Context) {
+// GradeSubmission (Admin)
+func GradeSubmission(c *gin.Context) {
 	var input dto.CreateScoreInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-
-	adminID, _ := c.Get("userID")
 
 	var submission models.Submission
 	if err := database.DB.First(&submission, input.SubmissionID).Error; err != nil {
@@ -25,40 +24,16 @@ func CreateScore(c *gin.Context) {
 		return
 	}
 
-	var score models.Score
-	err := database.DB.Where("submission_id = ?", input.SubmissionID).First(&score).Error
+	submission.Score = input.Score
+	submission.Feedback = input.Feedback
 
-	if err == nil {
-		score.Value = input.Value
-		score.Feedback = input.Feedback
-		score.AdminID = adminID.(uint)
-		database.DB.Save(&score)
-
-		if err := database.DB.Preload("Admin").First(&score, score.ID).Error; err != nil {
-			utils.APIResponse(c, http.StatusInternalServerError, "Failed to fetch score after update", err.Error())
-			return
-		}
-
-		utils.APIResponse(c, http.StatusOK, "Score updated successfully", score)
+	if err := database.DB.Save(&submission).Error; err != nil {
+		utils.APIResponse(c, http.StatusInternalServerError, "Failed to update submission score", err.Error())
 		return
 	}
 
-	score = models.Score{
-		Value:        input.Value,
-		Feedback:     input.Feedback,
-		AdminID:      adminID.(uint),
-		SubmissionID: input.SubmissionID,
-	}
+	database.DB.Preload("User").Preload("Series").First(&submission, submission.ID)
 
-	if err := database.DB.Create(&score).Error; err != nil {
-		utils.APIResponse(c, http.StatusInternalServerError, "Failed to create score", err.Error())
-		return
-	}
-
-	if err := database.DB.Preload("Admin").First(&score, score.ID).Error; err != nil {
-		utils.APIResponse(c, http.StatusInternalServerError, "Failed to fetch score after creation", err.Error())
-		return
-	}
-
-	utils.APIResponse(c, http.StatusCreated, "Score created successfully", score)
+	utils.APIResponse(c, http.StatusOK, "Submission graded successfully", submission)
 }
+

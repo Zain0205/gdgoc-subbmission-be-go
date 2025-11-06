@@ -39,6 +39,7 @@ func CreateSeries(c *gin.Context) {
 		return
 	}
 
+	database.DB.Preload("Track").First(&series, series.ID)
 	utils.APIResponse(c, http.StatusCreated, "Series created successfully", series)
 }
 

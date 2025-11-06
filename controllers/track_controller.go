@@ -26,7 +26,6 @@ func CreateTrack(c *gin.Context) {
 		TrackType:   input.TrackType,
 	}
 
-	// Set default if empty
 	if track.TrackType == "" {
 		track.TrackType = "STUDY_JAM"
 	}
@@ -37,7 +36,6 @@ func CreateTrack(c *gin.Context) {
 	}
 
 	database.DB.Preload("CreatedBy").First(&track, track.ID)
-
 	utils.APIResponse(c, http.StatusCreated, "Track created successfully", track)
 }
 
@@ -54,11 +52,10 @@ func GetTrackWithSeries(c *gin.Context) {
 	trackID := c.Param("id")
 	var track models.Track
 
-	if err := database.DB.Preload("Series").First(&track, trackID).Error; err != nil {
+	if err := database.DB.Preload("Series").Preload("CreatedBy").First(&track, trackID).Error; err != nil {
 		utils.APIResponse(c, http.StatusNotFound, "Track not found", err.Error())
 		return
 	}
 
 	utils.APIResponse(c, http.StatusOK, "Track fetched successfully", track)
 }
-

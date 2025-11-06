@@ -58,7 +58,6 @@ func CreateAchievement(c *gin.Context) {
 
 func GetAchievements(c *gin.Context) {
 	var achievs []models.Achievement
-	// Preload the "Type" (category)
 	database.DB.Preload("Type").Find(&achievs)
 	utils.APIResponse(c, http.StatusOK, "Achievements fetched", achievs)
 }
@@ -81,6 +80,8 @@ func UpdateAchievement(c *gin.Context) {
 		utils.APIResponse(c, http.StatusInternalServerError, "Failed to update achievement", err.Error())
 		return
 	}
+
+	database.DB.Preload("Type").First(&achiev, achiev.ID)
 	utils.APIResponse(c, http.StatusOK, "Achievement updated", achiev)
 }
 
@@ -109,12 +110,12 @@ func AwardAchievementToUser(c *gin.Context) {
 		EarnedAt:      time.Now(),
 	}
 
-	// Use FirstOrCreate to prevent awarding the same badge twice
 	if err := database.DB.FirstOrCreate(&userAchiev).Error; err != nil {
 		utils.APIResponse(c, http.StatusInternalServerError, "Failed to award achievement", err.Error())
 		return
 	}
 
+	database.DB.Preload("User").Preload("Achievement.Type").First(&userAchiev, "user_id = ? AND achievement_id = ?", userAchiev.UserID, userAchiev.AchievementID)
 	utils.APIResponse(c, http.StatusCreated, "Achievement awarded", userAchiev)
 }
 
@@ -138,3 +139,4 @@ func RevokeAchievementFromUser(c *gin.Context) {
 
 	utils.APIResponse(c, http.StatusOK, "Achievement revoked", nil)
 }
+

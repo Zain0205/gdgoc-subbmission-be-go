@@ -33,7 +33,5 @@ func GradeSubmission(c *gin.Context) {
 	}
 
 	database.DB.Preload("User").Preload("Series").First(&submission, submission.ID)
-
 	utils.APIResponse(c, http.StatusOK, "Submission graded successfully", submission)
 }
-

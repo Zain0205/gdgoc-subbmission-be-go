@@ -19,7 +19,7 @@ func SetupRouter() *gin.Engine {
 			auth.POST("/login", controllers.Login)
 		}
 
-		// 2. Public Routes
+		// 2. Public Routes (All authenticated users)
 		public := api.Group("/")
 		public.Use(middleware.AuthMiddleware())
 		{
@@ -34,6 +34,8 @@ func SetupRouter() *gin.Engine {
 		{
 			member.POST("/submissions", controllers.CreateSubmission)
 			member.POST("/series/:id/verify", controllers.VerifySeriesCode)
+
+			member.GET("/me/achievements", controllers.GetMyAchievements)
 		}
 
 		// 4. Admin Routes
@@ -45,8 +47,17 @@ func SetupRouter() *gin.Engine {
 			admin.PATCH("/series/:id/code", controllers.SetSeriesVerificationCode)
 			admin.GET("/submissions/series/:seriesId", controllers.GetSubmissionsBySeries)
 			admin.POST("/submissions/grade", controllers.GradeSubmission)
-
 			admin.PATCH("/users/:id/role", controllers.SetUserRole)
+
+			admin.POST("/achievement-types", controllers.CreateAchievementType)
+			admin.GET("/achievement-types", controllers.GetAchievementTypes)
+
+			admin.POST("/achievements", controllers.CreateAchievement)
+			admin.GET("/achievements", controllers.GetAchievements)
+			admin.PUT("/achievements/:id", controllers.UpdateAchievement)
+
+			admin.POST("/achievements/award", controllers.AwardAchievementToUser)
+			admin.POST("/achievements/revoke", controllers.RevokeAchievementFromUser)
 		}
 	}
 

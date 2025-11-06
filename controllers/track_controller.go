@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CreateTrack (Admin)
 func CreateTrack(c *gin.Context) {
 	var input dto.CreateTrackInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -24,6 +23,12 @@ func CreateTrack(c *gin.Context) {
 		TrackName:   input.TrackName,
 		Description: input.Description,
 		CreatedByID: adminID.(uint),
+		TrackType:   input.TrackType,
+	}
+
+	// Set default if empty
+	if track.TrackType == "" {
+		track.TrackType = "STUDY_JAM"
 	}
 
 	if err := database.DB.Create(&track).Error; err != nil {
@@ -36,7 +41,6 @@ func CreateTrack(c *gin.Context) {
 	utils.APIResponse(c, http.StatusCreated, "Track created successfully", track)
 }
 
-// GetAllTracks (Authenticated)
 func GetAllTracks(c *gin.Context) {
 	var tracks []models.Track
 	if err := database.DB.Find(&tracks).Error; err != nil {
@@ -46,7 +50,6 @@ func GetAllTracks(c *gin.Context) {
 	utils.APIResponse(c, http.StatusOK, "Tracks fetched successfully", tracks)
 }
 
-// GetTrackWithSeries (Authenticated)
 func GetTrackWithSeries(c *gin.Context) {
 	trackID := c.Param("id")
 	var track models.Track

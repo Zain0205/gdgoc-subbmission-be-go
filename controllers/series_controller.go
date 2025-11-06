@@ -26,11 +26,12 @@ func CreateSeries(c *gin.Context) {
 	}
 
 	series := models.Series{
-		TrackID:     input.TrackID,
-		SeriesName:  input.SeriesName,
-		Description: input.Description,
-		Deadline:    input.Deadline,
-		OrderIndex:  input.OrderIndex,
+		TrackID:       input.TrackID,
+		SeriesName:    input.SeriesName,
+		Description:   input.Description,
+		Deadline:      input.Deadline,
+		OrderIndex:    input.OrderIndex,
+		IsCompetition: input.IsCompetition,
 	}
 
 	if err := database.DB.Create(&series).Error; err != nil {

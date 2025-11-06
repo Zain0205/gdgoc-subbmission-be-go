@@ -31,6 +31,9 @@ func MigrateDatabase() {
 		&models.Submission{},
 		&models.Leaderboard{},
 		&models.UserSeriesVerification{},
+		&models.AchievementType{},
+		&models.Achievement{},
+		&models.UserAchievement{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database!", err)

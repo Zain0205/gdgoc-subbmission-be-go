@@ -18,7 +18,6 @@ type User struct {
 	PasswordHash string `json:"-" gorm:"not null"`
 	Role         string `json:"role" gorm:"type:enum('admin','member');default:'member'"`
 
-	// Relasi
 	Submissions []Submission `json:"submissions,omitempty" gorm:"foreignKey:UserID"`
 }
 
@@ -45,6 +44,8 @@ type Track struct {
 	Description string `json:"description" gorm:"type:text"`
 	CreatedByID uint   `json:"created_by_id"`
 
+	TrackType string `json:"track_type" gorm:"size:50;default:'STUDY_JAM'"`
+
 	// Relasi
 	CreatedBy User     `json:"created_by" gorm:"foreignKey:CreatedByID"`
 	Series    []Series `json:"series,omitempty" gorm:"foreignKey:TrackID"`
@@ -56,8 +57,11 @@ type Series struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
 
-	TrackID          uint      `json:"track_id" gorm:"uniqueIndex:idx_track_series"`
-	SeriesName       string    `json:"series_name" gorm:"uniqueIndex:idx_track_series;size:255"`
+	TrackID    uint   `json:"track_id" gorm:"uniqueIndex:idx_track_series"`
+	SeriesName string `json:"series_name" gorm:"uniqueIndex:idx_track_series;size:255"`
+
+	IsCompetition bool `json:"is_competition" gorm:"default:false"`
+
 	Description      string    `json:"description" gorm:"type:text"`
 	Deadline         time.Time `json:"deadline"`
 	OrderIndex       int       `json:"order_index"`
@@ -103,4 +107,34 @@ type Leaderboard struct {
 
 	User  User  `json:"user" gorm:"foreignKey:UserID"`
 	Track Track `json:"track" gorm:"foreignKey:TrackID"`
+}
+
+type AchievementType struct {
+	ID        uint      `json:"id" gorm:"primarykey"`
+	Name      string    `json:"name" gorm:"size:100;unique;not null"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Achievement struct {
+	ID                uint      `json:"id" gorm:"primarykey"`
+	Name              string    `json:"name" gorm:"size:255;unique;not null"`
+	Description       string    `json:"description" gorm:"type:text"`
+	IconURL           string    `json:"icon_url" gorm:"type:text"`
+	AchievementTypeID uint      `json:"achievement_type_id"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+
+	// Relasi
+	Type AchievementType `json:"type" gorm:"foreignKey:AchievementTypeID"`
+}
+
+type UserAchievement struct {
+	UserID        uint      `json:"user_id" gorm:"primaryKey"`
+	AchievementID uint      `json:"achievement_id" gorm:"primaryKey"`
+	EarnedAt      time.Time `json:"earned_at"`
+
+	// Relasi
+	User        User        `json:"user" gorm:"foreignKey:UserID"`
+	Achievement Achievement `json:"achievement" gorm:"foreignKey:AchievementID"`
 }

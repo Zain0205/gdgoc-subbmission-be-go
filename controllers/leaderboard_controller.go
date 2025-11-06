@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetLeaderboardByTrack
 func GetLeaderboardByTrack(c *gin.Context) {
 	trackID := c.Param("trackId")
 
@@ -20,6 +19,8 @@ func GetLeaderboardByTrack(c *gin.Context) {
 		Joins("JOIN submissions ON users.id = submissions.user_id").
 		Joins("JOIN series ON submissions.series_id = series.id").
 		Where("series.track_id = ?", trackID).
+		// Only sum scores from series that are marked as a competition
+		Where("series.is_competition = ?", true).
 		Group("users.id, users.name").
 		Order("total_score DESC").
 		Scan(&results).Error

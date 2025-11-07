@@ -1,0 +1,761 @@
+openapi: 3.0.0
+info:
+  title: GDG OC Submission App API
+  description: API documentation for the GDG Study Jam submission portal.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/api
+    description: Local Development Server (via Nginx)
+
+# 1. Components: Reusable parts of the API
+components:
+
+  # 1a. Security Schemes (JWT)
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # 1b. Schemas (Our Models and DTOs)
+  schemas:
+    
+    # --- DTOs: Inputs ---
+    RegisterInput:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Fahmi Zain
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+      required: [name, email, password]
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+      required: [email, password]
+    CreateTrackInput:
+      type: object
+      properties:
+        track_name:
+          type: string
+          example: WebDev Track
+        description:
+          type: string
+          example: Track for HTML, CSS, and React.
+        track_type:
+          type: string
+          example: "STUDY_JAM"
+    CreateSeriesInput:
+      type: object
+      properties:
+        track_id:
+          type: integer
+          example: 1
+        series_name:
+          type: string
+          example: "Series 1: HTML & CSS"
+        description:
+          type: string
+          example: "Warm-up for basic web dev."
+        deadline:
+          type: string
+          format: date-time
+          example: "2025-12-01T23:59:59Z"
+        order_index:
+          type: integer
+          example: 1
+        is_competition:
+          type: boolean
+          example: false
+    SetVerificationCodeInput:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "COMP123"
+    VerifyCodeInput:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "COMP123"
+    CreateSubmissionInput:
+      type: object
+      properties:
+        series_id:
+          type: integer
+          example: 1
+        file_url:
+          type: string
+          format: url
+          example: "https://github.com/user/my-project"
+    CreateScoreInput:
+      type: object
+      properties:
+        submission_id:
+          type: integer
+          example: 1
+        score:
+          type: integer
+          example: 95
+        feedback:
+          type: string
+          example: "Great work!"
+    UpdateUserRoleInput:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [admin, member]
+          example: admin
+    CreateAchievementTypeInput:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Leaderboard"
+    CreateAchievementInput:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "WebDev Gold"
+        description:
+          type: string
+          example: "1st Place in the WebDev Track"
+        icon_url:
+          type: string
+          format: url
+          example: "https_.../gold-badge.png"
+        achievement_type_id:
+          type: integer
+          example: 1
+    AwardAchievementInput:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 2
+        achievement_id:
+          type: integer
+          example: 1
+
+    # --- Models: Base Objects ---
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Fahmi Zain
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        role:
+          type: string
+          enum: [admin, member]
+          example: member
+        created_at:
+          type: string
+          format: date-time
+    Track:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        track_name:
+          type: string
+          example: "WebDev Track"
+        description:
+          type: string
+        track_type:
+          type: string
+          example: "STUDY_JAM"
+        created_by_id:
+          type: integer
+          example: 1
+        created_by:
+          $ref: '#/components/schemas/User'
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/Series'
+    Series:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        track_id:
+          type: integer
+          example: 1
+        series_name:
+          type: string
+          example: "Series 1: Warm-up"
+        description:
+          type: string
+        is_competition:
+          type: boolean
+          description: "False = Warm-up, True = Mini-Competition (counts for leaderboard)"
+          example: false
+        deadline:
+          type: string
+          format: date-time
+        order_index:
+          type: integer
+    Submission:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+        series_id:
+          type: integer
+        file_url:
+          type: string
+          format: url
+        score:
+          type: integer
+          example: 90
+        feedback:
+          type: string
+          example: "Solid work!"
+        user:
+          $ref: '#/components/schemas/User'
+        series:
+          $ref: '#/components/schemas/Series'
+    AchievementType:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Participation"
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "First Submission"
+        description:
+          type: string
+        icon_url:
+          type: string
+          format: url
+        achievement_type_id:
+          type: integer
+        type:
+          $ref: '#/components/schemas/AchievementType'
+    UserAchievement:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        achievement_id:
+          type: integer
+        earned_at:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/User'
+        achievement:
+          $ref: '#/components/schemas/Achievement'
+
+    # --- DTOs: Responses ---
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOi..."
+    LeaderboardResult:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: "Fahmi Prisma"
+        total_score:
+          type: number
+          format: float
+          example: 90
+        rank:
+          type: integer
+          example: 1
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Error message"
+        data:
+          type: object
+          nullable: true
+          example: null
+
+# 2. Global Security
+# All endpoints require JWT auth by default.
+security:
+  - jwtAuth: []
+
+# 3. Paths (Endpoints)
+paths:
+
+  # --- Auth ---
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      description: Creates a new user. The first user to register is an 'admin'.
+      security: [] # This endpoint is public
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/User'
+        '500':
+          $ref: '#/components/responses/Error'
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login a user
+      security: [] # This endpoint is public
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # --- Tracks ---
+  /tracks:
+    get:
+      tags: [Tracks]
+      summary: Get all tracks
+      responses:
+        '200':
+          description: A list of all tracks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Track'
+    post:
+      tags: [Admin: Tracks]
+      summary: (Admin) Create a new track
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTrackInput'
+      responses:
+        '201':
+          description: Track created
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Track'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /tracks/{id}:
+    get:
+      tags: [Tracks]
+      summary: Get a single track with its series
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The track details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --- Series ---
+  /admin/series:
+    post:
+      tags: [Admin: Series]
+      summary: (Admin) Create a new series or mini-competition
+      description: "Set 'is_competition' to true to mark this as a Mini-Competition."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSeriesInput'
+      responses:
+        '201':
+          description: Series created
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Series'
+        '404':
+          description: Track not found
+  /admin/series/{id}/code:
+    patch:
+      tags: [Admin: Series]
+      summary: (Admin) Set the verification code for a series
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetVerificationCodeInput'
+      responses:
+        '200':
+          description: Code set successfully
+  /member/series/{id}/verify:
+    post:
+      tags: [Member: Submissions]
+      summary: (Member) Verify attendance for a series
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyCodeInput'
+      responses:
+        '201':
+          description: Verification successful
+        '400':
+          description: Invalid verification code
+
+  # --- Submissions & Grading ---
+  /member/submissions:
+    post:
+      tags: [Member: Submissions]
+      summary: (Member) Create a new submission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubmissionInput'
+      responses:
+        '201':
+          description: Submission created
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Submission'
+        '403':
+          description: "User not verified for this series"
+  /admin/submissions/series/{seriesId}:
+    get:
+      tags: [Admin: Grading]
+      summary: (Admin) Get all submissions for a series
+      parameters:
+        - name: seriesId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Submission'
+  /admin/submissions/grade:
+    post:
+      tags: [Admin: Grading]
+      summary: (Admin) Grade a submission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScoreInput'
+      responses:
+        '200':
+          description: Submission graded
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Submission'
+        '404':
+          description: Submission not found
+
+  # --- Leaderboard ---
+  /leaderboard/track/{trackId}:
+    get:
+      tags: [Leaderboard]
+      summary: Get the leaderboard for a track
+      description: "Only scores from series marked 'is_competition: true' are counted."
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The ranked leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardResult'
+
+  # --- User Management ---
+  /admin/users/{id}/role:
+    patch:
+      tags: [Admin: Users]
+      summary: (Admin) Update a user's role
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRoleInput'
+      responses:
+        '200':
+          description: User role updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+  # --- Achievement (Badge) System ---
+  /admin/achievement-types:
+    get:
+      tags: [Admin: Achievements]
+      summary: (Admin) Get all achievement types (categories)
+      responses:
+        '200':
+          description: List of types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AchievementType'
+    post:
+      tags: [Admin: Achievements]
+      summary: (Admin) Create a new achievement type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAchievementTypeInput'
+      responses:
+        '201':
+          description: Type created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AchievementType'
+  /admin/achievements:
+    get:
+      tags: [Admin: Achievements]
+      summary: (Admin) Get all achievements (badges)
+      responses:
+        '200':
+          description: List of all badges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Achievement'
+    post:
+      tags: [Admin: Achievements]
+      summary: (Admin) Create a new achievement (badge)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAchievementInput'
+      responses:
+        '201':
+          description: Badge created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Achievement'
+  /admin/achievements/award:
+    post:
+      tags: [Admin: Achievements]
+      summary: (Admin) Manually award a badge to a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AwardAchievementInput'
+      responses:
+        '201':
+          description: Badge awarded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAchievement'
+  /admin/achievements/revoke:
+    post:
+      tags: [Admin: Achievements]
+      summary: (Admin) Manually revoke a badge from a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AwardAchievementInput'
+      responses:
+        '200':
+          description: Badge revoked
+  /member/me/achievements:
+    get:
+      tags: [Member: Achievements]
+      summary: (Member) Get all badges earned by the current user
+      responses:
+        '200':
+          description: A list of the user's earned badges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAchievement'
+
+# 4. Reusable Responses
+components:
+  responses:
+    Error:
+      description: An error occurred
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized (invalid or missing token)
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                type: string
+                example: "Invalid or expired token"
+    Forbidden:
+      description: Forbidden (user role does not have permission)
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                type: string
+                example: "Insufficient permissions"
+    NotFound:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                type: string
+                example: "Record not found"

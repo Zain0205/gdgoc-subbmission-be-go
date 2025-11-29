@@ -48,7 +48,7 @@ func SetupRouter() *gin.Engine {
 			admin.GET("/submissions/series/:seriesId", controllers.GetSubmissionsBySeries)
 			admin.POST("/submissions/grade", controllers.GradeSubmission)
 			admin.PATCH("/users/:id/role", controllers.SetUserRole)
-
+			admin.GET("/users", controllers.GetAllUsers)
 			admin.POST("/achievement-types", controllers.CreateAchievementType)
 			admin.GET("/achievement-types", controllers.GetAchievementTypes)
 
@@ -63,4 +63,3 @@ func SetupRouter() *gin.Engine {
 
 	return r
 }
-

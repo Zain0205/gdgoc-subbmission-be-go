@@ -36,12 +36,13 @@ func CreateTrack(c *gin.Context) {
 	}
 
 	database.DB.Preload("CreatedBy").First(&track, track.ID)
+
 	utils.APIResponse(c, http.StatusCreated, "Track created successfully", track)
 }
 
 func GetAllTracks(c *gin.Context) {
 	var tracks []models.Track
-	if err := database.DB.Find(&tracks).Error; err != nil {
+	if err := database.DB.Preload("Series").Find(&tracks).Error; err != nil {
 		utils.APIResponse(c, http.StatusInternalServerError, "Failed to fetch tracks", err.Error())
 		return
 	}
@@ -59,3 +60,4 @@ func GetTrackWithSeries(c *gin.Context) {
 
 	utils.APIResponse(c, http.StatusOK, "Track fetched successfully", track)
 }
+

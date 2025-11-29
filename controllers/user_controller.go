@@ -35,3 +35,14 @@ func SetUserRole(c *gin.Context) {
 
 	utils.APIResponse(c, http.StatusOK, "User role updated successfully", user)
 }
+
+// GetAllUsers (Admin)
+func GetAllUsers(c *gin.Context) {
+	var users []models.User
+	if err := database.DB.Select("id, name, email, role, created_at").Where("role = ?", "member").Find(&users).Error; err != nil {
+		utils.APIResponse(c, http.StatusInternalServerError, "Failed to fetch users", err.Error())
+		return
+	}
+	utils.APIResponse(c, http.StatusOK, "Users fetched successfully", users)
+}
+

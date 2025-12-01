@@ -10,9 +10,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(userID uint, role string) (string, error) {
+func GenerateToken(userID uint, name string, email string, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
+		"name":    name,
+		"email":   email,
 		"role":    role,
 		"exp":     time.Now().Add(time.Hour * 72).Unix(), // Token valid 3 hari
 	}

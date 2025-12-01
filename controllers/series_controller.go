@@ -43,7 +43,38 @@ func CreateSeries(c *gin.Context) {
 	utils.APIResponse(c, http.StatusCreated, "Series created successfully", series)
 }
 
-// SetSeriesVerificationCode (Admin)
+func UpdateSeries(c *gin.Context) {
+	id := c.Param("id")
+	var input map[string]interface{}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if v, ok := input["deadline"]; ok {
+		if dateStr, ok := v.(string); ok {
+			parsedTime, err := time.Parse(time.RFC3339, dateStr)
+			if err == nil {
+				input["deadline"] = parsedTime
+			}
+		}
+	}
+
+	var series models.Series
+	if err := database.DB.First(&series, id).Error; err != nil {
+		utils.APIResponse(c, http.StatusNotFound, "Series not found", nil)
+		return
+	}
+
+	if err := database.DB.Model(&series).Updates(input).Error; err != nil {
+		utils.APIResponse(c, http.StatusInternalServerError, "Failed to update series", err.Error())
+		return
+	}
+
+	utils.APIResponse(c, http.StatusOK, "Series updated successfully", series)
+}
+
 func SetSeriesVerificationCode(c *gin.Context) {
 	seriesID := c.Param("id")
 
@@ -68,7 +99,6 @@ func SetSeriesVerificationCode(c *gin.Context) {
 	utils.APIResponse(c, http.StatusOK, "Verification code set successfully", gin.H{"series_id": series.ID, "code_set": true})
 }
 
-// VerifySeriesCode (Member)
 func VerifySeriesCode(c *gin.Context) {
 	seriesIDStr := c.Param("id")
 	memberID, _ := c.Get("userID")

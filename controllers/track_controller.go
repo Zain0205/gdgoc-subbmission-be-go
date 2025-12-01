@@ -10,6 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type SeriesResponse struct {
+	models.Series
+	IsVerified    bool   `json:"is_verified"`
+	IsSubmitted   bool   `json:"is_submitted"`
+	SubmissionURL string `json:"submission_url,omitempty"`
+}
+
+type TrackResponse struct {
+	models.Track
+	Series []SeriesResponse `json:"series"`
+}
+
 func CreateTrack(c *gin.Context) {
 	var input dto.CreateTrackInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -46,6 +58,17 @@ func GetAllTracks(c *gin.Context) {
 		utils.APIResponse(c, http.StatusInternalServerError, "Failed to fetch tracks", err.Error())
 		return
 	}
+
+	userID, exists := c.Get("userID")
+	if exists {
+		var response []TrackResponse
+		for _, track := range tracks {
+			response = append(response, enrichTrackWithStatus(track, userID.(uint)))
+		}
+		utils.APIResponse(c, http.StatusOK, "Tracks fetched successfully", response)
+		return
+	}
+
 	utils.APIResponse(c, http.StatusOK, "Tracks fetched successfully", tracks)
 }
 
@@ -58,6 +81,47 @@ func GetTrackWithSeries(c *gin.Context) {
 		return
 	}
 
+	userID, exists := c.Get("userID")
+	if exists {
+		enrichedTrack := enrichTrackWithStatus(track, userID.(uint))
+		utils.APIResponse(c, http.StatusOK, "Track fetched successfully", enrichedTrack)
+		return
+	}
+
 	utils.APIResponse(c, http.StatusOK, "Track fetched successfully", track)
+}
+
+func enrichTrackWithStatus(track models.Track, userID uint) TrackResponse {
+	var verifications []models.UserSeriesVerification
+	verifiedMap := make(map[uint]bool)
+	database.DB.Where("user_id = ?", userID).Find(&verifications)
+	for _, v := range verifications {
+		verifiedMap[v.SeriesID] = true
+	}
+
+	var submissions []models.Submission
+	submissionMap := make(map[uint]string)
+	database.DB.Where("user_id = ?", userID).Find(&submissions)
+	for _, s := range submissions {
+		submissionMap[s.SeriesID] = s.FileURL
+	}
+
+	var seriesResponses []SeriesResponse
+	for _, s := range track.Series {
+		isVerified := verifiedMap[s.ID]
+		submissionURL, isSubmitted := submissionMap[s.ID]
+
+		seriesResponses = append(seriesResponses, SeriesResponse{
+			Series:        s,
+			IsVerified:    isVerified,
+			IsSubmitted:   isSubmitted,
+			SubmissionURL: submissionURL,
+		})
+	}
+
+	return TrackResponse{
+		Track:  track,
+		Series: seriesResponses,
+	}
 }
 

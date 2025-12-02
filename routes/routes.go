@@ -30,6 +30,8 @@ func SetupRouter() *gin.Engine {
 		member.Use(middleware.AuthMiddleware(), middleware.RoleMiddleware("member"))
 		{
 			member.POST("/submissions", controllers.CreateSubmission)
+			member.PUT("/submissions", controllers.UpdateSubmission)
+
 			member.POST("/series/:id/verify", controllers.VerifySeriesCode)
 			member.GET("/me/achievements", controllers.GetMyAchievements)
 		}

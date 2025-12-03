@@ -145,18 +145,30 @@ func AwardAchievementToUser(c *gin.Context) {
 		return
 	}
 
+	var existing models.UserAchievement
+	err := database.DB.Where("user_id = ? AND achievement_id = ?", input.UserID, input.AchievementID).First(&existing).Error
+	if err == nil {
+		utils.APIResponse(c, http.StatusConflict, "User already has this achievement", nil)
+		return
+	}
+
 	userAchiev := models.UserAchievement{
 		UserID:        input.UserID,
 		AchievementID: input.AchievementID,
 		EarnedAt:      time.Now(),
 	}
 
-	if err := database.DB.FirstOrCreate(&userAchiev).Error; err != nil {
+	if err := database.DB.Create(&userAchiev).Error; err != nil {
 		utils.APIResponse(c, http.StatusInternalServerError, "Failed to award achievement", err.Error())
 		return
 	}
 
-	database.DB.Preload("User").Preload("Achievement.Type").First(&userAchiev, "user_id = ? AND achievement_id = ?", userAchiev.UserID, userAchiev.AchievementID)
+	database.DB.
+		Preload("User").
+		Preload("Achievement.Type").
+		Where("user_id = ? AND achievement_id = ?", userAchiev.UserID, userAchiev.AchievementID).
+		First(&userAchiev)
+
 	utils.APIResponse(c, http.StatusCreated, "Achievement awarded", userAchiev)
 }
 

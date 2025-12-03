@@ -1,7 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/Zain0205/gdgoc-subbmission-be-go/database"
@@ -33,17 +37,55 @@ func GetAchievementTypes(c *gin.Context) {
 }
 
 func CreateAchievement(c *gin.Context) {
-	var input dto.CreateAchievementInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+	name := c.PostForm("name")
+	description := c.PostForm("description")
+	typeIDStr := c.PostForm("achievement_type_id")
+	iconURL := c.PostForm("icon_url")
+
+	if name == "" || description == "" {
+		utils.APIResponse(c, http.StatusBadRequest, "Name and Description are required", nil)
 		return
 	}
 
+	file, err := c.FormFile("icon_file")
+	if err == nil {
+		uploadPath := "uploads/badges"
+		if _, err := os.Stat(uploadPath); os.IsNotExist(err) {
+			os.MkdirAll(uploadPath, 0o755)
+		}
+
+		ext := filepath.Ext(file.Filename)
+		filename := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+		dst := filepath.Join(uploadPath, filename)
+
+		if err := c.SaveUploadedFile(file, dst); err != nil {
+			utils.APIResponse(c, http.StatusInternalServerError, "Failed to save file", err.Error())
+			return
+		}
+
+		iconURL = fmt.Sprintf("/uploads/badges/%s", filename)
+	}
+
+	typeID, _ := strconv.Atoi(typeIDStr)
+	if typeID == 0 {
+		typeID = 1
+	}
+
+	var count int64
+	database.DB.Model(&models.AchievementType{}).Where("id = ?", typeID).Count(&count)
+	if count == 0 {
+		defaultType := models.AchievementType{ID: uint(typeID), Name: "General"}
+		if err := database.DB.Create(&defaultType).Error; err != nil {
+			utils.APIResponse(c, http.StatusInternalServerError, "Failed to create default category", err.Error())
+			return
+		}
+	}
+
 	achiev := models.Achievement{
-		Name:              input.Name,
-		Description:       input.Description,
-		IconURL:           input.IconURL,
-		AchievementTypeID: input.AchievementTypeID,
+		Name:              name,
+		Description:       description,
+		IconURL:           iconURL,
+		AchievementTypeID: uint(typeID),
 	}
 
 	if err := database.DB.Create(&achiev).Error; err != nil {
@@ -52,7 +94,6 @@ func CreateAchievement(c *gin.Context) {
 	}
 
 	database.DB.Preload("Type").First(&achiev, achiev.ID)
-
 	utils.APIResponse(c, http.StatusCreated, "Achievement created", achiev)
 }
 
@@ -140,3 +181,11 @@ func RevokeAchievementFromUser(c *gin.Context) {
 	utils.APIResponse(c, http.StatusOK, "Achievement revoked", nil)
 }
 
+func DeleteAchievement(c *gin.Context) {
+	id := c.Param("id")
+	if err := database.DB.Delete(&models.Achievement{}, id).Error; err != nil {
+		utils.APIResponse(c, http.StatusInternalServerError, "Failed to delete achievement", err.Error())
+		return
+	}
+	utils.APIResponse(c, http.StatusOK, "Achievement deleted", nil)
+}

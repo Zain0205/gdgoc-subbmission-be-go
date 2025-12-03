@@ -15,6 +15,8 @@ func main() {
 
 	r := routes.SetupRouter()
 
+	r.Static("/uploads", "./uploads")
+
 	log.Println("Starting server on :8080")
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal("Failed to run server: ", err)

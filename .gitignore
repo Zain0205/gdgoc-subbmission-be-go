@@ -37,3 +37,5 @@ Thumbs.db
 # Logs and temporary files
 *.log
 *.tmp
+uploads/*
+!uploads/badges/.gitkeep

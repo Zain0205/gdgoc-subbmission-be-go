@@ -54,9 +54,9 @@ func SetupRouter() *gin.Engine {
 			admin.PUT("/achievements/:id", controllers.UpdateAchievement)
 			admin.POST("/achievements/award", controllers.AwardAchievementToUser)
 			admin.POST("/achievements/revoke", controllers.RevokeAchievementFromUser)
+			admin.DELETE("/achievements/:id", controllers.DeleteAchievement)
 		}
 	}
 
 	return r
 }
-

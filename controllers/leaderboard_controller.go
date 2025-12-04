@@ -20,7 +20,6 @@ func GetLeaderboardByTrack(c *gin.Context) {
 	trackID := c.Param("trackId")
 
 	var results []LeaderboardResult
-
 	err := database.DB.Table("submissions").
 		Select("users.id as user_id, users.name as name, users.email as email, SUM(submissions.score) as total_score").
 		Joins("JOIN users ON users.id = submissions.user_id").

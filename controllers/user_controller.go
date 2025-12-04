@@ -22,40 +22,51 @@ type ChangePasswordInput struct {
 
 func GetMe(c *gin.Context) {
 	userID := c.GetUint("userID")
+
 	var user models.User
-	database.DB.Select("id, name, email, role, AvatarURL").First(&user, userID)
+	database.DB.Select("id, name, email, role, avatar_url").First(&user, userID)
+
 	utils.APIResponse(c, http.StatusOK, "Success", user)
 }
 
 func UpdateProfile(c *gin.Context) {
 	userID := c.GetUint("userID")
+
 	var input UpdateProfileInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
+
 	var user models.User
 	database.DB.First(&user, userID)
+
 	user.Name = input.Name
 	database.DB.Save(&user)
+
 	utils.APIResponse(c, http.StatusOK, "Profile updated", user)
 }
 
 func ChangePassword(c *gin.Context) {
 	userID := c.GetUint("userID")
+
 	var input ChangePasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
+
 	var user models.User
 	database.DB.First(&user, userID)
+
 	if err := user.CheckPassword(input.CurrentPassword); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, "Current password incorrect", nil)
 		return
 	}
+
 	user.SetPassword(input.NewPassword)
 	database.DB.Save(&user)
+
 	utils.APIResponse(c, http.StatusOK, "Password changed", nil)
 }
 
@@ -67,10 +78,12 @@ func UpdateAvatar(c *gin.Context) {
 		utils.APIResponse(c, http.StatusBadRequest, "Image required", nil)
 		return
 	}
+
 	if file.Size > 5*1024*1024 {
 		utils.APIResponse(c, http.StatusBadRequest, "Max 5MB", nil)
 		return
 	}
+
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" {
 		utils.APIResponse(c, http.StatusBadRequest, "Only JPG/PNG/WebP", nil)
@@ -103,26 +116,32 @@ func UpdateAvatar(c *gin.Context) {
 
 func SetUserRole(c *gin.Context) {
 	userID := c.Param("id")
+
 	var input struct {
 		Role string `json:"role" binding:"required,oneof=admin member"`
 	}
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
+
 	var user models.User
 	if err := database.DB.First(&user, userID).Error; err != nil {
 		utils.APIResponse(c, http.StatusNotFound, "User not found", nil)
 		return
 	}
+
 	user.Role = input.Role
 	database.DB.Save(&user)
+
 	utils.APIResponse(c, http.StatusOK, "Role updated", user)
 }
 
 func GetAllUsers(c *gin.Context) {
 	var users []models.User
-	database.DB.Select("id, name, email, role, created_at, AvatarURL").Where("role = ?", "member").Find(&users)
+	database.DB.Select("id, name, email, role, created_at, avatar_url").Where("role = ?", "member").Find(&users)
+
 	utils.APIResponse(c, http.StatusOK, "Success", users)
 }
 

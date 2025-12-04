@@ -1,137 +1,135 @@
-```markdown
-# GDG On Campus Submission – Go Backend
+-----
 
-A production-grade, containerized Go backend with hot-reload development environment, built for the GDG On Campus StuJam challenge.
+# GDG On Campus – StuJam Backend
 
-## Prerequisites
+A high-performance, containerized **Go** backend designed for the GDG On Campus StuJam challenge. This project implements a robust REST API with a focus on modular architecture, utilizing **Docker Compose** for a seamless, hot-reload development environment.
 
-- Docker ≥ 20.10
-- Docker Compose ≥ v2.0
-- Git
+## ⚡️ Tech Stack
 
-## Project Structure
-```
+  * **Core:** Go (Golang)
+  * **Database:** MySQL 8.0
+  * **Infrastructure:** Docker & Docker Compose
+  * **Proxy:** Nginx
+  * **Dev Tooling:** Air (Hot Reload), Vite (Frontend Integration)
 
-parent-directory/
-├── gdgoc-subbmission-be-go/ # Backend (this repository)
-│ ├── config/
-│ │ └── config.go
-│ ├── controllers/
-│ │ ├── achievement_controller.go
-│ │ ├── auth_controller.go
-│ │ ├── leaderboard_controller.go
-│ │ ├── member_controller.go
-│ │ ├── notification_controller.go
-│ │ ├── series_controller.go
-│ │ ├── submission_controller.go
-│ │ ├── track_controller.go
-│ │ └── user_controller.go
-│ ├── database/
-│ │ └── database.go
-│ ├── docker/nginx/dev.conf
-│ ├── dto/dto.go
-│ ├── middleware/auth.go
-│ ├── models/entity.go
-│ ├── routes/routes.go
-│ ├── uploads/
-│ │ ├── avatars/
-│ │ └── badges/
-│ ├── utils/
-│ │ ├── file_utils.go
-│ │ ├── jwt.go
-│ │ └── response.go
-│ ├── validation/validator.go
-│ ├── docker-compose.yml
-│ ├── Dockerfile.dev
-│ ├── go.mod
-│ ├── go.sum
-│ ├── main.go
-│ ├── openapi.yaml
-│ ├── .env.example
-│ └── readme.md
-└── gdgoc-submission-fe-react/ # Frontend repository
-├── src/
-│ ├── components/
-│ ├── pages/
-│ ├── hooks/
-│ └── services/
-├── Dockerfile.dev
-└── package.json
+## 🚀 Quick Start
 
-````
+Get the complete stack running in minutes.
 
-## Quick Start
+**Prerequisites:** Docker ≥ 20.10, Git.
 
 ```bash
-git clone https://github.com/Zain0205/gdgoc-subbmission-be-go.git
-git clone https://github.com/Zain0205/gdgoc-submission-fe-react.git
+# 1. Clone repositories (Ensure standard naming convention)
+git clone https://github.com/Zain0205/gdgoc-subbmission-be-go.git backend
+git clone https://github.com/Zain0205/gdgoc-submission-fe-react.git frontend
 
-cd gdgoc-subbmission-be-go
+# 2. Configure environment
+cd backend
 cp .env.example .env
+
+# 3. Launch Services
 docker-compose up -d --build
-````
-
-## Service Endpoints
-
-| Service  | URL                   | Purpose         |
-| -------- | --------------------- | --------------- |
-| Nginx    | http://localhost:8000 | Reverse proxy   |
-| Backend  | http://localhost:8080 | API             |
-| Frontend | http://localhost:5173 | Vite dev server |
-| MySQL    | localhost:3306        | Database        |
-
-## Architecture
-
-| Service  | Container       | Technology   | Port |
-| -------- | --------------- | ------------ | ---- |
-| Backend  | stujam_backend  | Go + Air     | 8080 |
-| Frontend | stujam_frontend | React + Vite | 5173 |
-| Database | stujam_db       | MySQL 8.0    | 3306 |
-| Proxy    | stujam_nginx    | Nginx        | 80   |
-
-## Development Features
-
-- Backend hot-reload via Air (v1.62.0 – pinned for stability)
-- Frontend instant updates via Vite HMR
-- Full local stack including MySQL and Nginx reverse proxy
-
-## Useful Commands
-
-```bash
-docker-compose logs -f [service]      # Follow logs
-docker-compose down                   # Stop services
-docker-compose down -v                # Remove volumes (reset DB)
-docker-compose up -d --build          # Rebuild & start
-docker-compose build --no-cache       # Force rebuild
 ```
 
-## Troubleshooting
+The API will be available at `http://localhost:8080`.
 
-- Port already in use → Modify `docker-compose.yml` port mappings
-- Permission errors → `sudo chown -R $USER:$USER .`
-- Hot-reload issues → Check backend logs and ensure `.air.toml` is present
+## 🏗 Architecture & Services
 
-## Production Recommendations
+The application runs as a cohesive containerized suite managed by Nginx.
 
-- Multi-stage Dockerfile for minimal image size
-- Serve static React build through Nginx
-- Use secret management (Vault, AWS Secrets Manager, etc.)
-- Enable database connection pooling
+[Image of containerized microservices architecture diagram]
 
-## Acknowledgements
+| Service | Container Name | Technology | Internal Port | Public URL | Purpose |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Proxy** | `stujam_nginx` | Nginx | 80 | `localhost:8000` | Reverse Proxy & Routing |
+| **Backend** | `stujam_backend` | Go + Air | 8080 | `localhost:8080` | REST API |
+| **Frontend** | `stujam_frontend`| React + Vite | 5173 | `localhost:5173` | UI & Client Logic |
+| **Database**| `stujam_db` | MySQL 8.0 | 3306 | `localhost:3306` | Persistent Storage |
 
-We extend our sincere gratitude to:
+## 📂 Project Structure
 
-- [@rhankbrguw](https://github.com/rhankbrguw)
-- [@sepUnch](https://github.com/sepUnch)
+```text
+parent-directory/
+├── gdgoc-subbmission-be-go/       # Backend (this repository)
+│   ├── config/
+│   │   └── config.go
+│   ├── controllers/
+│   │   ├── achievement_controller.go
+│   │   ├── auth_controller.go
+│   │   ├── leaderboard_controller.go
+│   │   ├── member_controller.go
+│   │   ├── notification_controller.go
+│   │   ├── series_controller.go
+│   │   ├── submission_controller.go
+│   │   ├── track_controller.go
+│   │   └── user_controller.go
+│   ├── database/
+│   │   └── database.go
+│   ├── docker/nginx/dev.conf
+│   ├── dto/dto.go
+│   ├── middleware/auth.go
+│   ├── models/entity.go
+│   ├── routes/routes.go
+│   ├── uploads/
+│   │   ├── avatars/
+│   │   └── badges/
+│   ├── utils/
+│   │   ├── file_utils.go
+│   │   ├── jwt.go
+│   │   └── response.go
+│   ├── validation/validator.go
+│   ├── docker-compose.yml
+│   ├── Dockerfile.dev
+│   ├── go.mod
+│   ├── go.sum
+│   ├── main.go
+│   ├── openapi.yaml
+│   ├── .env.example
+│   └── readme.md
+└── gdgoc-submission-fe-react/     # Frontend repository
+    ├── src/
+    │   ├── components/
+    │   ├── pages/
+    │   ├── hooks/
+    │   └── services/
+    ├── Dockerfile.dev
+    └── package.json
+```
 
-For their significant contributes, code reviews.
+## 🛠 Development Workflow
 
-Special thanks to the **Google Developer Groups on Campus** organizing team for providing this invaluable platform and learning opportunity.
+### Common Commands
 
-## Contributing
+| Action | Command |
+| :--- | :--- |
+| **Start Stack** | `docker-compose up -d` |
+| **Follow Logs** | `docker-compose logs -f [service_name]` |
+| **Rebuild** | `docker-compose up -d --build` |
+| **Stop** | `docker-compose down` |
+| **Reset DB** | `docker-compose down -v` |
 
-Issues and pull requests are welcome.  
-Please use the GitHub issue tracker and follow standard contribution practices.
+### Troubleshooting
+
+  * **Port Conflicts:** Ensure ports `8000`, `8080`, `5173`, and `3306` are free, or modify `docker-compose.yml`.
+  * **Permissions:** If you encounter write errors on Linux: `sudo chown -R $USER:$USER .`
+  * **Hot-Reload:** If changes aren't reflecting, ensure `.air.toml` is correctly configured in the root.
+
+## 🤝 Contributing
+
+Contributions are welcome\! Please follow these steps:
+
+1.  Fork the repository.
+2.  Create a feature branch (`git checkout -b feature/amazing-feature`).
+3.  Commit your changes.
+4.  Open a Pull Request.
+
+## 📜 Acknowledgements
+
+Developed for the **GDG On Campus** initiative.
+
+  * **Team:** [@rhankbrguw](https://github.com/rhankbrguw), [@sepUnch](https://github.com/sepUnch), [@Zain0205](https://github.com/Zain0205)
+  * **Special Thanks:** The GDG Organizing Team for the platform and support.
 
 ---
+
+--

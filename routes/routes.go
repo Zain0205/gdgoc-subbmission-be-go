@@ -43,19 +43,26 @@ func SetupRouter() *gin.Engine {
 
 			member.POST("/series/:id/verify", controllers.VerifySeriesCode)
 			member.GET("/me/achievements", controllers.GetMyAchievements)
+
+			member.GET("/notifications", controllers.GetNotifications)
+			member.PATCH("/notifications/:id/read", controllers.MarkAsRead)
 		}
 
 		admin := api.Group("/admin")
 		admin.Use(middleware.AuthMiddleware(), middleware.RoleMiddleware("admin"))
 		{
 			admin.POST("/tracks", controllers.CreateTrack)
+
 			admin.POST("/series", controllers.CreateSeries)
 			admin.PATCH("/series/:id", controllers.UpdateSeries)
 			admin.PATCH("/series/:id/code", controllers.SetSeriesVerificationCode)
+
 			admin.GET("/submissions/series/:seriesId", controllers.GetSubmissionsBySeries)
 			admin.POST("/submissions/grade", controllers.GradeSubmission)
+
 			admin.PATCH("/users/:id/role", controllers.SetUserRole)
 			admin.GET("/users", controllers.GetAllUsers)
+
 			admin.POST("/achievement-types", controllers.CreateAchievementType)
 			admin.GET("/achievement-types", controllers.GetAchievementTypes)
 			admin.POST("/achievements", controllers.CreateAchievement)

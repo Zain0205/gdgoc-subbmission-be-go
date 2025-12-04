@@ -137,3 +137,14 @@ type UserAchievement struct {
 	User        User        `json:"user" gorm:"foreignKey:UserID"`
 	Achievement Achievement `json:"achievement" gorm:"foreignKey:AchievementID"`
 }
+
+type Notification struct {
+	ID        uint      `json:"id" gorm:"primarykey"`
+	UserID    uint      `json:"user_id" gorm:"index"`
+	Title     string    `json:"title" gorm:"type:varchar(255);not null"`
+	Message   string    `json:"message" gorm:"type:text"`
+	Type      string    `json:"type" gorm:"default:'grade'"`
+	RelatedID *uint     `json:"related_id"`
+	IsRead    bool      `json:"is_read" gorm:"default:false"`
+	CreatedAt time.Time `json:"created_at"`
+}

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -113,4 +114,20 @@ func GradeSubmission(c *gin.Context) {
 	}
 
 	utils.APIResponse(c, http.StatusOK, "Submission graded successfully", submission)
+
+	var series models.Series
+	database.DB.Select("series_name").First(&series, submission.SeriesID)
+
+	feedback := "No feedback provided."
+	if submission.Feedback != "" {
+		feedback = submission.Feedback
+	}
+
+	database.DB.Create(&models.Notification{
+		UserID:    submission.UserID,
+		Title:     "Your submission has been graded!",
+		Message:   fmt.Sprintf("Score: %d/100\nSeries: %s\n\nFeedback:\n%s", submission.Score, series.SeriesName, feedback),
+		Type:      "grade",
+		RelatedID: &submission.ID,
+	})
 }

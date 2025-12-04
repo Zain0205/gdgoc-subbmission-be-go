@@ -7,6 +7,7 @@ import (
 	"github.com/Zain0205/gdgoc-subbmission-be-go/dto"
 	"github.com/Zain0205/gdgoc-subbmission-be-go/models"
 	"github.com/Zain0205/gdgoc-subbmission-be-go/utils"
+	"github.com/Zain0205/gdgoc-subbmission-be-go/validation"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -18,7 +19,11 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Create Admin
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
+		return
+	}
+
 	var userCount int64
 	database.DB.Model(&models.User{}).Count(&userCount)
 
@@ -50,6 +55,11 @@ func Login(c *gin.Context) {
 	var input dto.LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
 		return
 	}
 

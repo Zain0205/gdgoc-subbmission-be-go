@@ -8,6 +8,7 @@ import (
 	"github.com/Zain0205/gdgoc-subbmission-be-go/dto"
 	"github.com/Zain0205/gdgoc-subbmission-be-go/models"
 	"github.com/Zain0205/gdgoc-subbmission-be-go/utils"
+	"github.com/Zain0205/gdgoc-subbmission-be-go/validation"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +16,11 @@ func CreateSubmission(c *gin.Context) {
 	var input dto.CreateSubmissionInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
 		return
 	}
 
@@ -42,6 +48,11 @@ func UpdateSubmission(c *gin.Context) {
 	var input dto.CreateSubmissionInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
 		return
 	}
 
@@ -82,6 +93,11 @@ func GradeSubmission(c *gin.Context) {
 		return
 	}
 
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
+		return
+	}
+
 	var submission models.Submission
 	if err := database.DB.First(&submission, input.SubmissionID).Error; err != nil {
 		utils.APIResponse(c, http.StatusNotFound, "Submission not found", nil)
@@ -98,4 +114,3 @@ func GradeSubmission(c *gin.Context) {
 
 	utils.APIResponse(c, http.StatusOK, "Submission graded successfully", submission)
 }
-

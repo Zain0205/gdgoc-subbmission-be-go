@@ -6,19 +6,12 @@ import (
 	"strings"
 
 	"github.com/Zain0205/gdgoc-subbmission-be-go/database"
+	"github.com/Zain0205/gdgoc-subbmission-be-go/dto"
 	"github.com/Zain0205/gdgoc-subbmission-be-go/models"
 	"github.com/Zain0205/gdgoc-subbmission-be-go/utils"
+	"github.com/Zain0205/gdgoc-subbmission-be-go/validation"
 	"github.com/gin-gonic/gin"
 )
-
-type UpdateProfileInput struct {
-	Name string `json:"name" binding:"required,min=2,max=50"`
-}
-
-type ChangePasswordInput struct {
-	CurrentPassword string `json:"current_password" binding:"required"`
-	NewPassword     string `json:"new_password" binding:"required,min=6"`
-}
 
 func GetMe(c *gin.Context) {
 	userID := c.GetUint("userID")
@@ -32,9 +25,14 @@ func GetMe(c *gin.Context) {
 func UpdateProfile(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var input UpdateProfileInput
+	var input dto.UpdateProfileInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
 		return
 	}
 
@@ -50,9 +48,14 @@ func UpdateProfile(c *gin.Context) {
 func ChangePassword(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	var input ChangePasswordInput
+	var input dto.ChangePasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
 		return
 	}
 
@@ -117,12 +120,14 @@ func UpdateAvatar(c *gin.Context) {
 func SetUserRole(c *gin.Context) {
 	userID := c.Param("id")
 
-	var input struct {
-		Role string `json:"role" binding:"required,oneof=admin member"`
-	}
-
+	var input dto.UpdateUserRoleInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.APIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	if err := validation.Validate(input); err != nil {
+		utils.ValidationErrorResponse(c, err)
 		return
 	}
 
@@ -144,4 +149,3 @@ func GetAllUsers(c *gin.Context) {
 
 	utils.APIResponse(c, http.StatusOK, "Success", users)
 }
-

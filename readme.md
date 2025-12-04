@@ -1,146 +1,137 @@
-# 🚀 GDG OC Submission – Go Backend
+```markdown
+# GDG On Campus Submission – Go Backend
 
-A containerized Go backend service with Docker-based development environment featuring hot-reload capabilities.
+A production-grade, containerized Go backend with hot-reload development environment, built for the GDG On Campus StuJam challenge.
 
-## 📋 Prerequisites
+## Prerequisites
 
-- [Docker](https://www.docker.com/get-started) (20.10+)
-- [Docker Compose](https://docs.docker.com/compose/install/) (v2.0+)
-- [Git](https://git-scm.com/)
+- Docker ≥ 20.10
+- Docker Compose ≥ v2.0
+- Git
 
-## 📁 Project Structure
-
+## Project Structure
 ```
+
 parent-directory/
-├── gdgoc-subbmission-be-go/      # Backend (this repository)
-│   ├── docker-compose.yml
-│   ├── Dockerfile.dev
-│   ├── docker/nginx/dev.conf
-│   └── .env.example
-└── gdgoc-submission-fe-react/    # Frontend repository
-    ├── Dockerfile.dev
-    └── package.json
-```
+├── gdgoc-subbmission-be-go/ # Backend (this repository)
+│ ├── config/
+│ │ └── config.go
+│ ├── controllers/
+│ │ ├── achievement_controller.go
+│ │ ├── auth_controller.go
+│ │ ├── leaderboard_controller.go
+│ │ ├── member_controller.go
+│ │ ├── notification_controller.go
+│ │ ├── series_controller.go
+│ │ ├── submission_controller.go
+│ │ ├── track_controller.go
+│ │ └── user_controller.go
+│ ├── database/
+│ │ └── database.go
+│ ├── docker/nginx/dev.conf
+│ ├── dto/dto.go
+│ ├── middleware/auth.go
+│ ├── models/entity.go
+│ ├── routes/routes.go
+│ ├── uploads/
+│ │ ├── avatars/
+│ │ └── badges/
+│ ├── utils/
+│ │ ├── file_utils.go
+│ │ ├── jwt.go
+│ │ └── response.go
+│ ├── validation/validator.go
+│ ├── docker-compose.yml
+│ ├── Dockerfile.dev
+│ ├── go.mod
+│ ├── go.sum
+│ ├── main.go
+│ ├── openapi.yaml
+│ ├── .env.example
+│ └── readme.md
+└── gdgoc-submission-fe-react/ # Frontend repository
+├── src/
+│ ├── components/
+│ ├── pages/
+│ ├── hooks/
+│ └── services/
+├── Dockerfile.dev
+└── package.json
 
-## ⚡ Quick Start
+````
 
-### 1. Clone Repositories
+## Quick Start
 
 ```bash
 git clone https://github.com/Zain0205/gdgoc-subbmission-be-go.git
 git clone https://github.com/Zain0205/gdgoc-submission-fe-react.git
-```
 
-### 2. Environment Configuration
-
-```bash
 cd gdgoc-subbmission-be-go
 cp .env.example .env
-```
-
-Required environment variables:
-
-```bash
-# Application
-APP_ENV=development
-APP_PORT=8080
-
-# Database
-DB_HOST=db
-DB_PORT=3306
-DB_DATABASE=stujam_db
-DB_USERNAME=stujam_user
-DB_PASSWORD=stujam_password
-DB_ROOT_PASSWORD=your_root_password_here
-
-# Security
-JWT_SECRET=your-secret-key
-JWT_EXPIRATION=24h
-
-# CORS
-ALLOWED_ORIGINS=http://localhost:8000,http://localhost:5173
-```
-
-### 3. Start Services
-
-```bash
 docker-compose up -d --build
-```
+````
 
-## 🌐 Service Endpoints
+## Service Endpoints
 
-| Service  | URL                         | Purpose                   |
-|----------|-----------------------------|---------------------------|
-| Nginx    | `http://localhost:8000`     | Reverse proxy entry point |
-| Backend  | `http://localhost:8080`     | Direct API access         |
-| Frontend | `http://localhost:5173`     | Development server        |
-| MySQL    | `localhost:3306`            | Database connection       |
+| Service  | URL                   | Purpose         |
+| -------- | --------------------- | --------------- |
+| Nginx    | http://localhost:8000 | Reverse proxy   |
+| Backend  | http://localhost:8080 | API             |
+| Frontend | http://localhost:5173 | Vite dev server |
+| MySQL    | localhost:3306        | Database        |
 
-## 🏗️ Architecture
+## Architecture
 
-| Service  | Container          | Technology   | Port |
-|----------|--------------------|--------------|------|
-| Backend  | `stujam_backend`   | Go + Air     | 8080 |
-| Frontend | `stujam_frontend`  | React + Vite | 5173 |
-| Database | `stujam_db`        | MySQL 8.0    | 3306 |
-| Proxy    | `stujam_nginx`     | Nginx        | 80   |
+| Service  | Container       | Technology   | Port |
+| -------- | --------------- | ------------ | ---- |
+| Backend  | stujam_backend  | Go + Air     | 8080 |
+| Frontend | stujam_frontend | React + Vite | 5173 |
+| Database | stujam_db       | MySQL 8.0    | 3306 |
+| Proxy    | stujam_nginx    | Nginx        | 80   |
 
-## 💻 Development
+## Development Features
 
-### Hot Reload
+- Backend hot-reload via Air (v1.62.0 – pinned for stability)
+- Frontend instant updates via Vite HMR
+- Full local stack including MySQL and Nginx reverse proxy
 
-- **Backend:** Air (v1.62.0) automatically reloads on `.go` file changes
-- **Frontend:** Vite HMR for instant updates
-
-> **⚠️ Note:** Air version is pinned to v1.62.0 in `Dockerfile.dev` due to compatibility issues with latest versions. Do not update without testing.
-
-### Common Commands
+## Useful Commands
 
 ```bash
-# View logs
-docker-compose logs -f [service-name]
-
-# Stop services
-docker-compose down
-
-# Reset database
-docker-compose down -v
-docker-compose up -d --build
-
-# Rebuild containers
-docker-compose build --no-cache
+docker-compose logs -f [service]      # Follow logs
+docker-compose down                   # Stop services
+docker-compose down -v                # Remove volumes (reset DB)
+docker-compose up -d --build          # Rebuild & start
+docker-compose build --no-cache       # Force rebuild
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
-**Port conflicts:** Modify port mappings in `docker-compose.yml`
+- Port already in use → Modify `docker-compose.yml` port mappings
+- Permission errors → `sudo chown -R $USER:$USER .`
+- Hot-reload issues → Check backend logs and ensure `.air.toml` is present
 
-**Permission errors:**
-```bash
-sudo chown -R $USER:$USER .
-```
+## Production Recommendations
 
-**Dependency updates:**
-```bash
-go mod tidy
-```
+- Multi-stage Dockerfile for minimal image size
+- Serve static React build through Nginx
+- Use secret management (Vault, AWS Secrets Manager, etc.)
+- Enable database connection pooling
 
-**Air hot-reload not working:**
-- Ensure Air v1.62.0 is installed (check `Dockerfile.dev`)
-- Verify `.air.toml` configuration exists
-- Check container logs: `docker-compose logs -f backend`
+## Acknowledgements
 
-## 🚢 Production Deployment
+We extend our sincere gratitude to:
 
-This configuration is for development only. Production deployment requires:
+- [@rhankbrguw](https://github.com/rhankbrguw)
+- [@sepUnch](https://github.com/sepUnch)
 
-1. Multi-stage Docker build for optimized Go binary
-2. Static React build served via Nginx
-3. Secure environment variable management
-4. Database connection pooling and optimization
+For their significant contributes, code reviews.
 
-## 🤝 Contributing
+Special thanks to the **Google Developer Groups on Campus** organizing team for providing this invaluable platform and learning opportunity.
 
-Submit issues and pull requests via the [issue tracker](https://github.com/Zain0205/gdgoc-subbmission-be-go/issues).
+## Contributing
+
+Issues and pull requests are welcome.  
+Please use the GitHub issue tracker and follow standard contribution practices.
 
 ---

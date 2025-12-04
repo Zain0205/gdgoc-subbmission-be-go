@@ -125,11 +125,9 @@ Contributions are welcome\! Please follow these steps:
 
 ## 📜 Acknowledgements
 
-Developed for the **GDG On Campus** initiative.
+Developers for the **GDG On Campus** submission app.
 
-  * **Team:** [@rhankbrguw](https://github.com/rhankbrguw), [@sepUnch](https://github.com/sepUnch), [@Zain0205](https://github.com/Zain0205)
+  * **Team:** [@Zain0205](https://github.com/Zain0205), [@rhankbrguw](https://github.com/rhankbrguw), [@sepUnch](https://github.com/sepUnch) 
   * **Special Thanks:** The GDG Organizing Team for the platform and support.
 
 ---
-
---

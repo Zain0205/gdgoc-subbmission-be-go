@@ -8,17 +8,16 @@ import (
 )
 
 type User struct {
-	ID        uint           `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
-
-	Name         string `json:"name"`
-	Email        string `json:"email" gorm:"unique;not null"`
-	PasswordHash string `json:"-" gorm:"not null"`
-	Role         string `json:"role" gorm:"type:enum('admin','member');default:'member'"`
-
-	Submissions []Submission `json:"submissions,omitempty" gorm:"foreignKey:UserID"`
+	ID           uint           `json:"id" gorm:"primarykey"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"deleted_at,omitempty" gorm:"index"`
+	Name         string         `json:"name"`
+	Email        string         `json:"email" gorm:"unique;not null"`
+	PasswordHash string         `json:"-" gorm:"not null"`
+	Role         string         `json:"role" gorm:"type:enum('admin','member');default:'member'"`
+	AvatarURL    string         `json:"avatar_url" gorm:"size:255"`
+	Submissions  []Submission   `json:"submissions,omitempty" gorm:"foreignKey:UserID"`
 }
 
 func (u *User) SetPassword(password string) error {

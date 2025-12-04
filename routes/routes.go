@@ -18,6 +18,15 @@ func SetupRouter() *gin.Engine {
 			auth.POST("/login", controllers.Login)
 		}
 
+		authenticated := api.Group("/")
+		authenticated.Use(middleware.AuthMiddleware())
+		{
+			authenticated.GET("/me", controllers.GetMe)
+			authenticated.PATCH("/me/profile", controllers.UpdateProfile)
+			authenticated.PATCH("/me/password", controllers.ChangePassword)
+			authenticated.POST("/me/avatar", controllers.UpdateAvatar)
+		}
+
 		public := api.Group("/")
 		public.Use(middleware.AuthMiddleware())
 		{

@@ -12,6 +12,7 @@ type LeaderboardResult struct {
 	UserID     uint    `json:"user_id"`
 	Name       string  `json:"name"`
 	Email      string  `json:"email"`
+	AvatarURL  string  `json:"avatar_url"`
 	TotalScore float64 `json:"total_score"`
 	Rank       int     `json:"rank"`
 }
@@ -21,11 +22,11 @@ func GetLeaderboardByTrack(c *gin.Context) {
 
 	var results []LeaderboardResult
 	err := database.DB.Table("submissions").
-		Select("users.id as user_id, users.name as name, users.email as email, SUM(submissions.score) as total_score").
+		Select("users.id as user_id, users.name as name, users.email as email, users.avatar_url as avatar_url, SUM(submissions.score) as total_score").
 		Joins("JOIN users ON users.id = submissions.user_id").
 		Joins("JOIN series ON series.id = submissions.series_id").
 		Where("series.track_id = ? AND series.is_competition = ?", trackID, true).
-		Group("users.id, users.name, users.email").
+		Group("users.id, users.name, users.email, users.avatar_url").
 		Order("total_score DESC").
 		Scan(&results).Error
 	if err != nil {

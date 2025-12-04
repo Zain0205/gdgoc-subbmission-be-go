@@ -24,7 +24,7 @@ git clone https://github.com/Zain0205/gdgoc-subbmission-be-go.git backend
 git clone https://github.com/Zain0205/gdgoc-submission-fe-react.git frontend
 
 # 2. Configure environment
-cd backend
+cd gdgoc-subbmission-be-go/ 
 cp .env.example .env
 
 # 3. Launch Services
